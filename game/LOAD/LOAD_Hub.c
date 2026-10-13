@@ -15,6 +15,15 @@ void LOAD_Hub_ReadFile(struct BigHeader *bigfile, int levID, int packID)
 		return;
 	}
 
+#if defined(CTR_NATIVE)
+	// NOTE(aalhendi): Called every frame while in the gate trigger, so deferring is free. Don't
+	// wipe a pack under an in-flight read (e.g. the Aku Aku mask loading into the same pack).
+	if (LOAD_NativeQueueBusy())
+	{
+		return;
+	}
+#endif
+
 	sdata->modelMaskHints3D = 0;
 
 	// Swap to pack of hub you're NOT on,

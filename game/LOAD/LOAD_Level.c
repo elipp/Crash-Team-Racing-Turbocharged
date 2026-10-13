@@ -4,7 +4,46 @@
 // Dont get confused, packID is LOAD_GetAdvPackIndex(),
 // which gives the pack of the hub you're NOT on, because the
 // game does 3-GetAdvPackIndex to load the hub you ARE on
+#if defined(CTR_NATIVE)
+// NOTE(aalhendi): The mask loads into the hub pack you are NOT on, which is the pack a hub
+// preload targets. Native CD is fast enough that both can land together, so a request that
+// finds the queue busy is parked and retried by the mask hint while it waits for the model.
+static struct
+{
+	b32 pending;
+	int packID;
+	int maskID;
+} s_pendingTalkingMask;
+
+static void LOAD_TalkingMask_Now(int packID, int maskID);
+
 void LOAD_TalkingMask(int packID, int maskID)
+{
+	if (LOAD_NativeQueueBusy())
+	{
+		s_pendingTalkingMask.pending = 1;
+		s_pendingTalkingMask.packID = packID;
+		s_pendingTalkingMask.maskID = maskID;
+		return;
+	}
+
+	s_pendingTalkingMask.pending = 0;
+	LOAD_TalkingMask_Now(packID, maskID);
+}
+
+void LOAD_TalkingMask_Retry(void)
+{
+	if (s_pendingTalkingMask.pending && !LOAD_NativeQueueBusy())
+	{
+		s_pendingTalkingMask.pending = 0;
+		LOAD_TalkingMask_Now(s_pendingTalkingMask.packID, s_pendingTalkingMask.maskID);
+	}
+}
+
+static void LOAD_TalkingMask_Now(int packID, int maskID)
+#else
+void LOAD_TalkingMask(int packID, int maskID)
+#endif
 {
 	sdata->modelMaskHints3D = 0;
 
