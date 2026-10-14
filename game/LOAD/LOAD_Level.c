@@ -47,6 +47,21 @@ void LOAD_TalkingMask(int packID, int maskID)
 {
 	sdata->modelMaskHints3D = 0;
 
+#if defined(CTR_NATIVE)
+	// NOTE(aalhendi): If the hub preloaded into this pack is still waiting to be swapped in, the
+	// wipe below destroys it while gGT->level2 points at it. Drop level2 and let SwapNow reload it.
+	{
+		struct GameTracker *gGT = sdata->gGT;
+		const struct Mempack *pack = &sdata->mempack[packID];
+
+		if ((gGT->level2 != NULL) && ((u32)gGT->level2 >= (u32)pack->start) && ((u32)gGT->level2 < (u32)pack->endOfMemory))
+		{
+			LOAD_Hub_NoteClobbered(packID, gGT->levID_in_each_mempack[packID]);
+			gGT->level2 = NULL;
+		}
+	}
+#endif
+
 	// invalidate alternative-hub, because
 	// the mask will load in that level's RAM
 	sdata->gGT->levID_in_each_mempack[packID] = -1;

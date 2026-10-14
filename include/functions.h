@@ -455,6 +455,7 @@ void LOAD_NextQueuedFile(void);
 #if defined(CTR_NATIVE)
 b32 LOAD_NativeQueueBusy(void);
 void LOAD_TalkingMask_Retry(void);
+void LOAD_Hub_NoteClobbered(int packID, int levID);
 #endif
 
 void MainDB_OTMem(struct OTMem *otMem, u32 size);
