@@ -4,8 +4,9 @@
 // Dont get confused, packID is LOAD_GetAdvPackIndex(),
 // which gives the pack of the hub you're NOT on, because the
 // game does 3-GetAdvPackIndex to load the hub you ARE on
+
 #if defined(CTR_NATIVE)
-// NOTE(aalhendi): The mask loads into the hub pack you are NOT on, which is the pack a hub
+// NOTE: The mask loads into the hub pack you are NOT on, which is the pack a hub
 // preload targets. Native CD is fast enough that both can land together, so a request that
 // finds the queue busy is parked and retried by the mask hint while it waits for the model.
 static struct
@@ -48,7 +49,7 @@ void LOAD_TalkingMask(int packID, int maskID)
 	sdata->modelMaskHints3D = 0;
 
 #if defined(CTR_NATIVE)
-	// NOTE(aalhendi): If the hub preloaded into this pack is still waiting to be swapped in, the
+	// NOTE: If the hub preloaded into this pack is still waiting to be swapped in, the
 	// wipe below destroys it while gGT->level2 points at it. Drop level2 and let SwapNow reload it.
 	{
 		struct GameTracker *gGT = sdata->gGT;

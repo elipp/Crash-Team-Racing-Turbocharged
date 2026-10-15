@@ -41,7 +41,7 @@ void LOAD_CDRequestCallback(struct LoadQueueSlot *lqs)
 }
 
 #if defined(CTR_NATIVE)
-// NOTE(aalhendi): Native CD completions fire from VSync, so a mempack must not be
+// NOTE: Native CD completions fire from VSync, so a mempack must not be
 // cleared or swapped while the queue has work pending or a read in flight.
 b32 LOAD_NativeQueueBusy(void)
 {

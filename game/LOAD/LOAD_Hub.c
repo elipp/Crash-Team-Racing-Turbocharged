@@ -16,7 +16,7 @@ void LOAD_Hub_ReadFile(struct BigHeader *bigfile, int levID, int packID)
 	}
 
 #if defined(CTR_NATIVE)
-	// NOTE(aalhendi): Called every frame while in the gate trigger, so deferring is free. Don't
+	// NOTE: Called every frame while in the gate trigger, so deferring is free. Don't
 	// wipe a pack under an in-flight read (e.g. the Aku Aku mask loading into the same pack).
 	if (LOAD_NativeQueueBusy())
 	{
@@ -41,7 +41,7 @@ void LOAD_Hub_ReadFile(struct BigHeader *bigfile, int levID, int packID)
 }
 
 #if defined(CTR_NATIVE)
-// NOTE(aalhendi): A hub preloaded into a pack can be wiped by the Aku Aku mask before it is swapped
+// NOTE: A hub preloaded into a pack can be wiped by the Aku Aku mask before it is swapped
 // in. The mask records what it destroyed; SwapNow reloads it instead of stalling forever on level2.
 static struct
 {
