@@ -1344,19 +1344,29 @@ static void RenderBucket_StoreMvpTranslation(struct InstDrawPerPlayer *idpp, con
 }
 
 #if defined(CTR_NATIVE)
-// At high resolution the retail cutoff makes time crates visibly pop in. Once
+// At high resolution the retail cutoff makes crates and wumpa visibly pop in. Once
 // every header is out of range, keep drawing the last (lowest) LOD out to a
 // multiple of its retail distance.
-#define RENDER_BUCKET_TIME_CRATE_DRAW_DISTANCE_SCALE 3
+#define RENDER_BUCKET_PICKUP_DRAW_DISTANCE_SCALE 3
 
-static struct ModelHeader *RenderBucket_SelectTimeCrateFarHeader(struct Instance *inst, int projectedDistance, int *lodIndexOut)
+static struct ModelHeader *RenderBucket_SelectPickupFarHeader(struct Instance *inst, int projectedDistance, int *lodIndexOut)
 {
 	int id = inst->model->id;
 	int last;
 	struct ModelHeader *mh;
 
-	if (id != STATIC_TIME_CRATE_01 && id != STATIC_TIME_CRATE_02 && id != STATIC_TIME_CRATE_03)
+	switch (id)
 	{
+	case STATIC_TIME_CRATE_01:
+	case STATIC_TIME_CRATE_02:
+	case STATIC_TIME_CRATE_03:
+	case PU_WUMPA_FRUIT:
+	case PU_FRUIT_CRATE:
+	case PU_RANDOM_CRATE:
+	case STATIC_CRATE_TNT:
+	case STATIC_CRATE_NITRO:
+		break;
+	default:
 		return 0;
 	}
 
@@ -1367,7 +1377,7 @@ static struct ModelHeader *RenderBucket_SelectTimeCrateFarHeader(struct Instance
 		return 0;
 	}
 
-	if (projectedDistance < (int)(u16)mh->maxDistanceLOD * RENDER_BUCKET_TIME_CRATE_DRAW_DISTANCE_SCALE)
+	if (projectedDistance < (int)(u16)mh->maxDistanceLOD * RENDER_BUCKET_PICKUP_DRAW_DISTANCE_SCALE)
 	{
 		*lodIndexOut = last;
 		return mh;
@@ -1375,7 +1385,6 @@ static struct ModelHeader *RenderBucket_SelectTimeCrateFarHeader(struct Instance
 	return 0;
 }
 
-#if defined(CTR_NATIVE)
 // Max detail option: draw the first enabled header (cutscenes hide headers by
 // zeroing maxDistanceLOD) while any header is still in range, so the model
 // keeps its retail draw distance but never drops to a lower LOD.
@@ -1406,7 +1415,7 @@ static struct ModelHeader *RenderBucket_SelectMaxLodModelHeader(struct Instance 
 		}
 	}
 
-	best = RenderBucket_SelectTimeCrateFarHeader(inst, projectedDistance, lodIndexOut);
+	best = RenderBucket_SelectPickupFarHeader(inst, projectedDistance, lodIndexOut);
 	if (best != 0)
 	{
 		return best;
@@ -1500,7 +1509,7 @@ static struct ModelHeader *RenderBucket_SelectModelHeader(struct Instance *inst,
 	}
 
 #if defined(CTR_NATIVE)
-	mh = RenderBucket_SelectTimeCrateFarHeader(inst, projectedDistance, lodIndexOut);
+	mh = RenderBucket_SelectPickupFarHeader(inst, projectedDistance, lodIndexOut);
 	if (mh != 0)
 	{
 		return mh;
