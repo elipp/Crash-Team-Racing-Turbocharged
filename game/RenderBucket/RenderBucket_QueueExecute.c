@@ -1344,6 +1344,38 @@ static void RenderBucket_StoreMvpTranslation(struct InstDrawPerPlayer *idpp, con
 }
 
 #if defined(CTR_NATIVE)
+// At high resolution the retail cutoff makes time crates visibly pop in. Once
+// every header is out of range, keep drawing the last (lowest) LOD out to a
+// multiple of its retail distance.
+#define RENDER_BUCKET_TIME_CRATE_DRAW_DISTANCE_SCALE 3
+
+static struct ModelHeader *RenderBucket_SelectTimeCrateFarHeader(struct Instance *inst, int projectedDistance, int *lodIndexOut)
+{
+	int id = inst->model->id;
+	int last;
+	struct ModelHeader *mh;
+
+	if (id != STATIC_TIME_CRATE_01 && id != STATIC_TIME_CRATE_02 && id != STATIC_TIME_CRATE_03)
+	{
+		return 0;
+	}
+
+	last = inst->model->numHeaders - 1;
+	mh = &inst->model->headers[last];
+	if ((u16)mh->maxDistanceLOD == 0)
+	{
+		return 0;
+	}
+
+	if (projectedDistance < (int)(u16)mh->maxDistanceLOD * RENDER_BUCKET_TIME_CRATE_DRAW_DISTANCE_SCALE)
+	{
+		*lodIndexOut = last;
+		return mh;
+	}
+	return 0;
+}
+
+#if defined(CTR_NATIVE)
 // Max detail option: draw the first enabled header (cutscenes hide headers by
 // zeroing maxDistanceLOD) while any header is still in range, so the model
 // keeps its retail draw distance but never drops to a lower LOD.
@@ -1372,6 +1404,12 @@ static struct ModelHeader *RenderBucket_SelectMaxLodModelHeader(struct Instance 
 			*lodIndexOut = bestIndex;
 			return best;
 		}
+	}
+
+	best = RenderBucket_SelectTimeCrateFarHeader(inst, projectedDistance, lodIndexOut);
+	if (best != 0)
+	{
+		return best;
 	}
 
 	*lodExhaustedOut = 1;
@@ -1460,6 +1498,14 @@ static struct ModelHeader *RenderBucket_SelectModelHeader(struct Instance *inst,
 			break;
 		}
 	}
+
+#if defined(CTR_NATIVE)
+	mh = RenderBucket_SelectTimeCrateFarHeader(inst, projectedDistance, lodIndexOut);
+	if (mh != 0)
+	{
+		return mh;
+	}
+#endif
 
 	*lodExhaustedOut = 1;
 	return 0;
