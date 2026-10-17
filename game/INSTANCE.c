@@ -10,16 +10,14 @@ void INSTANCE_Birth(struct Instance *inst, struct Model *model, const char *name
 
 	// copy name
 #ifdef CTR_NATIVE
-	if (name == NULL)
+	// NOTE: Retail reads 15 bytes regardless of the source length (PS1 RDATA
+	// padding, or null-space for unnamed instances); native names can be shorter.
+	memset(inst->name, 0, sizeof(inst->name));
+	if (name != NULL)
 	{
-		// NOTE(aalhendi): Retail can read PS1 null-space for unnamed instances.
-		for (i = 0; i < 16; i++)
-		{
-			inst->name[i] = '\0';
-		}
+		strncpy(inst->name, name, 15);
 	}
-	else
-#endif
+#else
 	{
 		for (i = 0; i < 15; i++)
 		{
@@ -27,6 +25,7 @@ void INSTANCE_Birth(struct Instance *inst, struct Model *model, const char *name
 		}
 		inst->name[15] = '\0';
 	}
+#endif
 
 	inst->depthBiasNormal = 0xfe;
 	inst->depthBiasSecondary = 0xc;
